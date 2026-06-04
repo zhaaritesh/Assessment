@@ -6,7 +6,10 @@
     "start": "expo start",
     "android": "expo run:android",
     "ios": "expo run:ios",
-    "lint": "expo lint"
+    "lint": "expo lint",
+    "build:android:bundle": "expo export:embed --platform android --entry-file node_modules/expo-router/entry.js --bundle-output android/app/src/main/assets/index.android.bundle --assets-dest android/app/src/main/res",
+    "build:android:apk": "cd android && cross-env SKIP_BUNDLING=true ./gradlew assembleRelease",
+    "build:android": "npm run build:android:bundle && npm run build:android:apk"
   },
   "dependencies": {
     "@expo-google-fonts/dm-sans": "^0.4.2",
@@ -49,8 +52,10 @@
   },
   "devDependencies": {
     "@types/react": "~19.1.0",
+    "cross-env": "^10.1.0",
     "eslint": "^9.25.0",
     "eslint-config-expo": "~10.0.0",
+    "puppeteer": "^25.1.0",
     "typescript": "~5.9.2"
   },
   "private": true
