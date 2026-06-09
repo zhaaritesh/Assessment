@@ -1,0 +1,20 @@
+appId: com.sagawrr.rnme
+name: "Auth - Session Persists After Restart"
+
+---
+
+- runFlow: ../auth/_login_helper.yaml
+
+# Restart without clearing state
+- launchApp:
+    clearState: false
+
+- waitForAnimationToEnd
+
+- assertVisible:
+    text: "Browse"
+    label: "User stays logged in after app restart (redux-persist)"
+
+- assertNotVisible:
+    text: "Sign In"
+    label: "Login screen NOT shown when session is active"

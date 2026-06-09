@@ -1,0 +1,66 @@
+appId: com.sagawrr.rnme
+name: "Auth - Login Error States"
+
+---
+
+# ── Empty fields ─────────────────────────────────────────────────────────────
+- launchApp:
+    clearState: true
+
+- tapOn:
+    text: "Sign In"
+
+- assertVisible:
+    text: "required"
+    label: "Validation fires on empty submit (email)"
+
+# ── Wrong password ────────────────────────────────────────────────────────────
+- tapOn:
+    text: "Email"
+    optional: true
+- tapOn:
+    id: "email-input"
+    optional: true
+- inputText: "test@rnme.com"
+
+- tapOn:
+    text: "Password"
+    optional: true
+- tapOn:
+    id: "password-input"
+    optional: true
+- inputText: "WrongPassword!"
+
+- tapOn:
+    text: "Sign In"
+
+- assertVisible:
+    text: "Invalid"
+    label: "Error message shown for wrong credentials"
+
+# ── Malformed email ───────────────────────────────────────────────────────────
+- launchApp:
+    clearState: true
+
+- tapOn:
+    text: "Email"
+    optional: true
+- tapOn:
+    id: "email-input"
+    optional: true
+- inputText: "notanemail"
+
+- tapOn:
+    text: "Password"
+    optional: true
+- tapOn:
+    id: "password-input"
+    optional: true
+- inputText: "Test123$$"
+
+- tapOn:
+    text: "Sign In"
+
+- assertVisible:
+    text: "email"
+    label: "Email format validation error shown"

@@ -1,0 +1,46 @@
+appId: com.sagawrr.rnme
+name: "Favorites - Persist Across App Restart"
+
+---
+
+- runFlow: ../auth/_login_helper.yaml
+
+- waitForAnimationToEnd
+
+# Add a favorite
+- tapOn:
+    index: 0
+    optional: true
+
+- waitForAnimationToEnd
+
+- tapOn:
+    text: "Favorite"
+    optional: true
+- tapOn:
+    id: "favorite-button"
+    optional: true
+
+- waitForAnimationToEnd
+
+- back
+
+# Restart app WITHOUT clearing state
+- launchApp:
+    clearState: false
+
+- waitForAnimationToEnd
+
+# Should still be logged in (redux-persist)
+- assertVisible:
+    text: "Browse"
+    label: "Session persists after restart"
+
+- tapOn:
+    text: "Favorites"
+
+- waitForAnimationToEnd
+
+- assertNotVisible:
+    text: "No favorites"
+    label: "Favorites persist across app restart (AsyncStorage)"

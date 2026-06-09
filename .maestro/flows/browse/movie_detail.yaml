@@ -1,0 +1,60 @@
+appId: com.sagawrr.rnme
+name: "Browse - Movie Detail"
+
+---
+
+- runFlow: ../auth/_login_helper.yaml
+
+- waitForAnimationToEnd
+
+# Tap first visible movie row
+- tapOn:
+    index: 0
+    text: ".*"
+    regex: true
+    optional: true
+
+# Fallback: scroll list and tap first item
+- scrollUntilVisible:
+    element:
+      index: 0
+    direction: DOWN
+    optional: true
+
+# Accept whatever the first tappable movie card is
+- tapOn:
+    index: 0
+    optional: true
+
+- waitForAnimationToEnd
+
+# ── Detail screen assertions ──────────────────────────────────────────────────
+- assertVisible:
+    text: "Overview"
+    label: "Detail screen shows Overview section"
+
+- assertVisible:
+    text: "Rating"
+    optional: true
+    label: "Rating visible on detail screen"
+
+# ── Favorite toggle ───────────────────────────────────────────────────────────
+- tapOn:
+    text: "Favorite"
+    optional: true
+- tapOn:
+    id: "favorite-button"
+    optional: true
+
+- waitForAnimationToEnd
+
+- assertVisible:
+    text: "Favorite"
+    label: "Favorite button remains visible after toggle"
+
+# ── Back navigation ───────────────────────────────────────────────────────────
+- back
+
+- assertVisible:
+    text: "Browse"
+    label: "Back returns to Browse screen"

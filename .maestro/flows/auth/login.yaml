@@ -1,0 +1,35 @@
+appId: com.sagawrr.rnme
+name: "Auth - Login"
+
+---
+
+# ── Happy path ──────────────────────────────────────────────────────────────
+- launchApp:
+    clearState: true
+
+- assertVisible:
+    text: "Sign In"
+    label: "Login screen loads on cold start"
+
+- tapOn:
+    id: "email-input"
+    optional: true
+- tapOn:
+    text: "Email"
+    optional: true
+- inputText: "test@rnme.com"
+
+- tapOn:
+    id: "password-input"
+    optional: true
+- tapOn:
+    text: "Password"
+    optional: true
+- inputText: "Test123$$"
+
+- tapOn:
+    text: "Sign In"
+
+- assertVisible:
+    text: "Browse"
+    label: "Lands on Browse tab after successful login"

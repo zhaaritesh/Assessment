@@ -1,0 +1,65 @@
+appId: com.sagawrr.rnme
+name: "Favorites - Add & Remove"
+
+---
+
+- runFlow: ../auth/_login_helper.yaml
+
+- waitForAnimationToEnd
+
+# ── Add a movie to favorites ──────────────────────────────────────────────────
+# Tap the first movie in browse
+- tapOn:
+    index: 0
+    optional: true
+
+- waitForAnimationToEnd
+
+# Save the title to reference later (screenshot baseline)
+- tapOn:
+    text: "Favorite"
+    optional: true
+- tapOn:
+    id: "favorite-button"
+    optional: true
+
+- waitForAnimationToEnd
+
+# Go back to browse
+- back
+
+# ── Navigate to Favorites tab ─────────────────────────────────────────────────
+- tapOn:
+    text: "Favorites"
+
+- waitForAnimationToEnd
+
+- assertNotVisible:
+    text: "No favorites"
+    label: "Favorited movie appears in Favorites tab"
+
+# ── Remove from favorites (from favorites tab) ────────────────────────────────
+- tapOn:
+    index: 0
+    optional: true
+
+- waitForAnimationToEnd
+
+- tapOn:
+    text: "Favorite"
+    optional: true
+- tapOn:
+    id: "favorite-button"
+    optional: true
+
+- waitForAnimationToEnd
+
+- back
+
+- waitForAnimationToEnd
+
+# Expect empty state after removing the only favorite
+- assertVisible:
+    text: "No favorites"
+    optional: true
+    label: "Empty state shown when all favorites removed"

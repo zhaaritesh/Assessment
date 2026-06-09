@@ -1,55 +1,155 @@
-# RNME — Movie Explorer
+# RNME — QA Automation Test Suite
 
-React Native (Expo) app to browse TMDb movies, save favorites locally, and watch trailers.
+Automated E2E tests for the RNME Android movie browsing app, written with [Maestro](https://maestro.mobile.dev).
 
-## Architecture overview
+## Why Maestro
 
-- **Routing**: Expo Router (`src/app/`) with tabs + stack routes.
-- **Screens**: UI lives in `src/screens/`; shared UI primitives in `src/components/ui/`.
-- **State**: Redux Toolkit + RTK Query in `src/store/` (`tmdbApi`, slices).
-- **Persistence**: `redux-persist` persists `tmdbApi`, `favorites`, `theme` (AsyncStorage).
-- **Auth**: Supabase auth client in `src/lib/supabase/client.ts`.
+| Factor | Reasoning |
+|---|---|
+| Zero native build step | Works directly against the APK via ADB — no app rebuild, no SDK wiring |
+| YAML flows | Human-readable, easy for any engineer to maintain or extend without coding |
+| React Native-friendly | Handles async rendering and RN's bridge delays well (`waitForAnimationToEnd`) |
+| Fast feedback loop | `maestro test` on a single flow runs in seconds |
+| CI-ready | Single binary, exits non-zero on failure — drops straight into any pipeline |
 
-## Libraries (purpose)
+Alternatives considered: **Appium** (more powerful but heavy setup, slower iteration), **Detox** (requires app rebuild with test runner, doesn't work with pre-built APK), **WebdriverIO** (good for web-heavy RN but overkill here).
 
-- **Routing**: `expo-router`
-- **State**: `@reduxjs/toolkit`, `react-redux` (RTK Query for TMDb)
-- **Persistence**: `redux-persist`, `@react-native-async-storage/async-storage`
-- **Auth**: `@supabase/supabase-js`
-- **Lists**: `@shopify/flash-list`
-- **Forms/validation**: `react-hook-form`, `zod`
-- **UI/motion**: `react-native-reanimated`, `expo-image`
-- **Network**: `@react-native-community/netinfo`
-- **Trailers**: `react-native-youtube-bridge`, `react-native-webview`, `expo-web-browser`
+---
 
-## API source
+## Prerequisites
 
-- **TMDb**: movie metadata + images.
-- **YouTube**: trailer playback uses video keys from TMDb’s `/movie/{id}/videos`.
+| Requirement | Version |
+|---|---|
+| Java | 11+ |
+| Android SDK / ADB | any recent |
+| Maestro CLI | latest |
+| Android device or emulator | API 28+ recommended |
 
-## Setup & run locally
-
-Create a `.env` in the project root:
+### Install Maestro
 
 ```bash
-EXPO_PUBLIC_TMDB_API_KEY=your_tmdb_api_key
-EXPO_PUBLIC_TMDB_BASE_URL=https://api.themoviedb.org/3
-
-EXPO_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
-EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your_anon_key
+curl -Ls "https://get.maestro.mobile.dev" | bash
 ```
+
+Verify:
 
 ```bash
-npm install
-npx expo start
+maestro --version
 ```
 
-### Test login
+### Install the APK
 
-Email: `test@rnme.com`  
-Password: `Test123$$`
+```bash
+# Clone the repo you forked
+git clone https://github.com/<your-fork>/rnme.git
+cd rnme
 
-## Download APK
+# Connect your device / start an emulator, then:
+adb install rnme.apk
+```
 
-- **APK**: [`rnme.apk`](https://raw.githubusercontent.com/sagawrr/rnme/main/rnme.apk)
-> Note: This is a **universal APK**, so the file size is larger (includes multiple CPU architectures).
+---
+
+## Running Tests
+
+### Run all flows
+
+```bash
+maestro test .maestro/
+```
+
+### Run a single flow
+
+```bash
+maestro test .maestro/flows/auth/login.yaml
+```
+
+### Run a specific folder
+
+```bash
+maestro test .maestro/flows/favorites/
+```
+
+### Watch mode (re-runs on save)
+
+```bash
+maestro test --continuous .maestro/flows/browse/browse_search.yaml
+```
+
+### Generate a test report (HTML)
+
+```bash
+maestro test .maestro/ --format junit --output results.xml
+```
+
+---
+
+## Test Suite Structure
+
+```
+.maestro/
+└── flows/
+    ├── auth/
+    │   ├── _login_helper.yaml       # Shared login steps (imported by other flows)
+    │   ├── login.yaml               # Happy path login
+    │   ├── login_errors.yaml        # Empty fields, wrong password, bad email
+    │   └── session_persist.yaml     # Session survives app restart
+    ├── browse/
+    │   ├── tab_navigation.yaml      # Tab bar smoke test
+    │   ├── browse_search.yaml       # Search happy path + empty state
+    │   └── movie_detail.yaml        # Detail screen + back navigation
+    ├── favorites/
+    │   ├── favorites.yaml           # Add → view → remove cycle
+    │   └── favorites_persistence.yaml  # Favorites survive restart (AsyncStorage)
+    └── profile/
+        └── profile.yaml            # Theme toggle + sign out
+```
+
+**Naming convention:** flows prefixed with `_` are helpers, not standalone test cases.
+
+---
+
+## Element Targeting Strategy
+
+Maestro is used in a layered fallback pattern to keep selectors resilient:
+
+1. **`id:` first** — if `testID` props are set in the RN source, these are the most stable
+2. **`text:` fallback** — visible label text; survives layout changes, breaks only on copy changes
+3. **`index: 0`** — last resort for dynamic list items with no stable ID
+
+This avoids brittle XPath or positional-only selectors that break on minor UI changes.
+
+---
+
+## Coverage Summary
+
+| Area | Scenarios Covered |
+|---|---|
+| Auth | Happy path login, empty submit, wrong password, malformed email, session persistence |
+| Browse | Default list loads, search match, search clear, no-results empty state |
+| Movie Detail | Screen opens, overview visible, favorite toggle, back navigation |
+| Favorites | Add, view, remove, persistence across restart |
+| Profile | Theme toggle, sign out → returns to login |
+| Navigation | Full tab bar smoke test |
+
+**Out of scope (intentional):** trailer player (WebView, excluded per task spec), backend mocking (testing against live data as instructed).
+
+---
+
+## What I'd Tackle Next (With More Time)
+
+- **Element IDs in source** — add `testID` props to key interactive elements (`email-input`, `favorite-button`, `theme-toggle`) so selectors don't rely on text matching at all
+- **Scroll list coverage** — test pagination / infinite scroll on Browse; currently only first visible items are targeted
+- **Offline mode** — intercept network via `adb shell settings put global airplane_mode_on 1` and assert the app surfaces a meaningful error rather than crashing
+- **Cross-session favorites** — verify favorites aren't shared between user accounts (logout → login as different user)
+- **CI integration** — GitHub Actions workflow: spin up an emulator, install APK, run full suite, publish JUnit XML as artifact
+- **Visual regression baseline** — Maestro screenshots on each flow for pixel-diff tracking
+
+---
+
+## Test Credentials
+
+```
+Email:    test@rnme.com
+Password: Test123$$
+```

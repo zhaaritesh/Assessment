@@ -1,0 +1,29 @@
+appId: com.sagawrr.rnme
+name: "_helper - Login"
+
+---
+
+- launchApp:
+    clearState: true
+
+- tapOn:
+    text: "Email"
+    optional: true
+- tapOn:
+    id: "email-input"
+    optional: true
+- inputText: "test@rnme.com"
+
+- tapOn:
+    text: "Password"
+    optional: true
+- tapOn:
+    id: "password-input"
+    optional: true
+- inputText: "Test123$$"
+
+- tapOn:
+    text: "Sign In"
+
+- assertVisible:
+    text: "Browse"

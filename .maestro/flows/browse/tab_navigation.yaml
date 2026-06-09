@@ -1,0 +1,37 @@
+appId: com.sagawrr.rnme
+name: "Navigation - Tab Bar Smoke Test"
+
+---
+
+- runFlow: ../auth/_login_helper.yaml
+
+- waitForAnimationToEnd
+
+# Browse tab (default)
+- assertVisible:
+    text: "Browse"
+    label: "Browse tab visible after login"
+
+# Favorites tab
+- tapOn:
+    text: "Favorites"
+- waitForAnimationToEnd
+- assertVisible:
+    text: "Favorites"
+    label: "Favorites tab navigates correctly"
+
+# Profile tab
+- tapOn:
+    text: "Profile"
+- waitForAnimationToEnd
+- assertVisible:
+    text: "Profile"
+    label: "Profile tab navigates correctly"
+
+# Back to Browse
+- tapOn:
+    text: "Browse"
+- waitForAnimationToEnd
+- assertVisible:
+    text: "Browse"
+    label: "Returns to Browse from Profile"

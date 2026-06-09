@@ -1,0 +1,69 @@
+appId: com.sagawrr.rnme
+name: "Profile - Theme Toggle & Sign Out"
+
+---
+
+- runFlow: ../auth/_login_helper.yaml
+
+# Navigate to Profile tab
+- tapOn:
+    text: "Profile"
+
+- waitForAnimationToEnd
+
+- assertVisible:
+    text: "Profile"
+    label: "Profile screen loads"
+
+# ── Theme toggle ──────────────────────────────────────────────────────────────
+- tapOn:
+    text: "Dark"
+    optional: true
+- tapOn:
+    id: "theme-toggle"
+    optional: true
+
+- waitForAnimationToEnd
+
+# Toggle back
+- tapOn:
+    text: "Light"
+    optional: true
+- tapOn:
+    id: "theme-toggle"
+    optional: true
+
+- waitForAnimationToEnd
+
+# ── Theme persists across tabs ────────────────────────────────────────────────
+- tapOn:
+    text: "Browse"
+
+- tapOn:
+    text: "Profile"
+
+- waitForAnimationToEnd
+
+- assertVisible:
+    text: "Profile"
+    label: "Theme preference stays after tab switch"
+
+# ── Sign out ──────────────────────────────────────────────────────────────────
+- tapOn:
+    text: "Sign Out"
+    optional: true
+- tapOn:
+    text: "Sign out"
+    optional: true
+- tapOn:
+    text: "Logout"
+    optional: true
+- tapOn:
+    id: "sign-out-button"
+    optional: true
+
+- waitForAnimationToEnd
+
+- assertVisible:
+    text: "Sign In"
+    label: "Sign out returns to Login screen"

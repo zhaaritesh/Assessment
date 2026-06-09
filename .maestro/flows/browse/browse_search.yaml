@@ -1,0 +1,59 @@
+appId: com.sagawrr.rnme
+name: "Browse - Movie List & Search"
+
+---
+
+- runFlow: ../auth/_login_helper.yaml
+
+# ── Default state ─────────────────────────────────────────────────────────────
+- assertVisible:
+    text: "Browse"
+    label: "Browse tab is active"
+
+- waitForAnimationToEnd
+
+- assertNotVisible:
+    text: "No movies found"
+    label: "Movie list populates from API"
+
+# ── Search happy path ─────────────────────────────────────────────────────────
+- tapOn:
+    text: "Search"
+    optional: true
+- tapOn:
+    id: "search-input"
+    optional: true
+- inputText: "Inception"
+
+- waitForAnimationToEnd
+
+- assertVisible:
+    text: "Inception"
+    label: "Search returns matching result"
+
+# ── Search clears results on empty ───────────────────────────────────────────
+- clearText
+- waitForAnimationToEnd
+
+- assertNotVisible:
+    text: "No movies found"
+    label: "Clearing search restores default list"
+
+# ── Search with no results ────────────────────────────────────────────────────
+- tapOn:
+    text: "Search"
+    optional: true
+- tapOn:
+    id: "search-input"
+    optional: true
+- inputText: "xyzzy12345notamovie"
+
+- waitForAnimationToEnd
+
+- assertVisible:
+    text: "No"
+    label: "Empty state shown for unmatched query"
+
+# ── Reset search ──────────────────────────────────────────────────────────────
+- clearText
+- waitForAnimationToEnd
