@@ -28,8 +28,8 @@ Alternatives considered: **Appium** (more powerful but heavy setup, slower itera
 ### Install the APK
 
 ```bash
-git clone https://github.com/<your-fork>/rnme.git
-cd rnme
+git clone https://github.com/zhaaritesh/Assessment.git
+cd Assessment
 adb install rnme.apk
 ```
 
@@ -60,8 +60,12 @@ maestro test \
 maestro test .maestro/flows/auth/login.yaml
 
 # Landscape orientation test (Maestro 2.6 has no native rotation command — ADB wrapper provided)
-.maestro/run_landscape.sh                          # portrait default
+.maestro/run_landscape.sh                          # default device
 .maestro/run_landscape.sh emulator-5554            # specific device
+
+# Offline mode test (logs in online, blocks network via iptables, asserts offline UI)
+.maestro/run_offline.sh                            # default device
+.maestro/run_offline.sh emulator-5554              # specific device
 
 # Watch mode (re-runs on save)
 maestro test --continuous .maestro/flows/browse/browse_search.yaml
@@ -114,6 +118,7 @@ Default values (used when no `--env` flag is provided):
     │   ├── tab_navigation.yaml              # Tab bar smoke: Browse → Favorites → Profile → Browse
     │   ├── browse_search.yaml               # Search: match, clear, no-results empty state
     │   ├── browse_search_edge.yaml          # Edge cases: min-char hint, case-insensitive, special chars
+    │   ├── browse_offline.yaml              # Offline banner + cached list (run via run_offline.sh)
     │   ├── movie_detail.yaml                # Detail screen: RELEASED/RATING/RUNTIME, Save/Saved toggle
     │   └── movie_detail_orientation.yaml    # Trailer button (portrait + landscape via ADB wrapper)
     ├── favorites/
@@ -194,6 +199,7 @@ Both verified against the live accessibility tree on Pixel 6 (1080×2400). Inten
 | **Profile — actions** | Theme toggle (Light/Dark/System), theme persists on tab switch, sign-out → Login |
 | **Profile — content** | Email displayed correctly, "SIGNED IN AS" section, all theme options rendered |
 | **Navigation** | Full tab bar smoke test across all three tabs |
+| **Offline — Browse** | Offline banner shown when network unavailable; cached movie list still visible; tab navigation works offline (run via `run_offline.sh`) |
 
 **Out of scope (intentional):**
 - Trailer WebView *content* — video playback and controls are not asserted; only that the player opens and back navigation works
@@ -214,12 +220,12 @@ Both verified against the live accessibility tree on Pixel 6 (1080×2400). Inten
 | Image content unverifiable | Maestro cannot assert that poster or backdrop images actually loaded (only that the screen is rendered) | Add visual regression tooling |
 | Trailer WebView content | Video controls and playback are not assertable via Maestro | Espresso Web or Playwright for WebView-internal assertions |
 | Landscape orientation via Maestro | Maestro 2.6 has no native rotation command — orientation is set with `adb shell` before running `run_landscape.sh` | Will be resolved natively in a future Maestro release |
+| Offline test on emulators | Emulator virtual network does not respond to `svc wifi disable`/airplane-mode broadcasts on Android 12+; `run_offline.sh` uses `iptables --uid-owner` to block the app's traffic, which triggers the offline UI correctly | Works as-is on emulators with root; physical devices use standard airplane mode toggle |
 
 ---
 
 ## What I'd Tackle Next
 
-- **Offline mode** — toggle airplane mode via `adb shell settings put global airplane_mode_on 1`, assert app surfaces a meaningful offline banner rather than crashing or showing empty state without explanation
 - **CI pipeline** — GitHub Actions: spin up emulator, install APK, run full suite, publish JUnit XML as artifact
 - **`testID` props in source** — add to password field, save button, theme toggle so selectors are ID-based instead of text/coordinate-based
 - **Cross-account isolation** — sign out, create a second guest session, verify first user's favorites are not visible

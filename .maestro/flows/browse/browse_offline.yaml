@@ -1,0 +1,51 @@
+appId: com.anonymous.rnme
+name: "Browse - Offline Mode"
+
+# Run via .maestro/run_offline.sh — that script handles network toggling
+# and logs in while online before disabling the network.
+# Do not run this flow standalone.
+
+---
+
+# Resume the logged-in session — clearState: false keeps the in-memory movie
+# cache and AsyncStorage auth token intact.
+- launchApp:
+    clearState: false
+
+- waitForAnimationToEnd
+
+# Wait for cached movie list to render before asserting the offline banner.
+# RTK Query serves stale data immediately; NetInfo fires shortly after launch.
+- extendedWaitUntil:
+    visible:
+      text: "Popular right now"
+    timeout: 15000
+
+# ── Offline banner ─────────────────────────────────────────────────────────────
+- assertVisible:
+    text: "already loaded until you reconnect"
+    label: "Offline banner shown when network is unavailable"
+
+# ── Cached movie list still visible (app did not crash or clear data) ──────────
+- assertVisible:
+    text: "Popular right now"
+    label: "Cached movie list still visible while offline"
+
+# ── Tab navigation still works offline ────────────────────────────────────────
+- tapOn:
+    text: "Favorites"
+
+- waitForAnimationToEnd
+
+- assertVisible:
+    text: "Favorites"
+    label: "Favorites tab accessible while offline"
+
+- tapOn:
+    text: "Browse"
+
+- waitForAnimationToEnd
+
+- assertVisible:
+    text: "already loaded until you reconnect"
+    label: "Offline banner persists after tab switch"
