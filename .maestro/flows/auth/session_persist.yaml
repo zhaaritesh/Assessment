@@ -1,4 +1,4 @@
-appId: com.sagawrr.rnme
+appId: com.anonymous.rnme
 name: "Auth - Session Persists After Restart"
 
 ---
@@ -12,9 +12,9 @@ name: "Auth - Session Persists After Restart"
 - waitForAnimationToEnd
 
 - assertVisible:
-    text: "Browse"
+    text: "Home"
     label: "User stays logged in after app restart (redux-persist)"
 
 - assertNotVisible:
-    text: "Sign In"
+    text: "Log in"
     label: "Login screen NOT shown when session is active"

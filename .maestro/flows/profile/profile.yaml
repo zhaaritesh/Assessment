@@ -1,4 +1,4 @@
-appId: com.sagawrr.rnme
+appId: com.anonymous.rnme
 name: "Profile - Theme Toggle & Sign Out"
 
 ---
@@ -37,7 +37,7 @@ name: "Profile - Theme Toggle & Sign Out"
 
 # ── Theme persists across tabs ────────────────────────────────────────────────
 - tapOn:
-    text: "Browse"
+    text: "Home"
 
 - tapOn:
     text: "Profile"
@@ -65,5 +65,5 @@ name: "Profile - Theme Toggle & Sign Out"
 - waitForAnimationToEnd
 
 - assertVisible:
-    text: "Sign In"
+    text: "Log in"
     label: "Sign out returns to Login screen"

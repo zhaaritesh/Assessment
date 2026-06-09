@@ -1,4 +1,4 @@
-appId: com.sagawrr.rnme
+appId: com.anonymous.rnme
 name: "_helper - Login"
 
 ---
@@ -8,22 +8,13 @@ name: "_helper - Login"
 
 - tapOn:
     text: "Email"
-    optional: true
-- tapOn:
-    id: "email-input"
-    optional: true
 - inputText: "test@rnme.com"
 
 - tapOn:
     text: "Password"
-    optional: true
-- tapOn:
-    id: "password-input"
-    optional: true
 - inputText: "Test123$$"
 
 - tapOn:
-    text: "Sign In"
+    text: "Log in"
 
-- assertVisible:
-    text: "Browse"
+- waitForAnimationToEnd

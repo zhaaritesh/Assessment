@@ -1,5 +1,5 @@
-appId: com.sagawrr.rnme
-name: "Browse - Movie Detail"
+appId: com.anonymous.rnme
+name: "Home - Movie Detail"
 
 ---
 
@@ -56,5 +56,5 @@ name: "Browse - Movie Detail"
 - back
 
 - assertVisible:
-    text: "Browse"
-    label: "Back returns to Browse screen"
+    text: "Home"
+    label: "Back returns to Home screen"

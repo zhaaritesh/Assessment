@@ -1,4 +1,4 @@
-appId: com.sagawrr.rnme
+appId: com.anonymous.rnme
 name: "Navigation - Tab Bar Smoke Test"
 
 ---
@@ -7,10 +7,10 @@ name: "Navigation - Tab Bar Smoke Test"
 
 - waitForAnimationToEnd
 
-# Browse tab (default)
+# Home tab (default)
 - assertVisible:
-    text: "Browse"
-    label: "Browse tab visible after login"
+    text: "Home"
+    label: "Home tab visible after login"
 
 # Favorites tab
 - tapOn:
@@ -28,10 +28,10 @@ name: "Navigation - Tab Bar Smoke Test"
     text: "Profile"
     label: "Profile tab navigates correctly"
 
-# Back to Browse
+# Back to Home
 - tapOn:
-    text: "Browse"
+    text: "Home"
 - waitForAnimationToEnd
 - assertVisible:
-    text: "Browse"
-    label: "Returns to Browse from Profile"
+    text: "Home"
+    label: "Returns to Home from Profile"

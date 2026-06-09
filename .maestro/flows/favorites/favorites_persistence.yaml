@@ -1,4 +1,4 @@
-appId: com.sagawrr.rnme
+appId: com.anonymous.rnme
 name: "Favorites - Persist Across App Restart"
 
 ---
@@ -33,7 +33,7 @@ name: "Favorites - Persist Across App Restart"
 
 # Should still be logged in (redux-persist)
 - assertVisible:
-    text: "Browse"
+    text: "Home"
     label: "Session persists after restart"
 
 - tapOn:

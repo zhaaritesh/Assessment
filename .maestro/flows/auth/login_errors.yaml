@@ -1,4 +1,4 @@
-appId: com.sagawrr.rnme
+appId: com.anonymous.rnme
 name: "Auth - Login Error States"
 
 ---
@@ -8,7 +8,7 @@ name: "Auth - Login Error States"
     clearState: true
 
 - tapOn:
-    text: "Sign In"
+    text: "Log in"
 
 - assertVisible:
     text: "required"
@@ -32,7 +32,7 @@ name: "Auth - Login Error States"
 - inputText: "WrongPassword!"
 
 - tapOn:
-    text: "Sign In"
+    text: "Log in"
 
 - assertVisible:
     text: "Invalid"
@@ -59,7 +59,7 @@ name: "Auth - Login Error States"
 - inputText: "Test123$$"
 
 - tapOn:
-    text: "Sign In"
+    text: "Log in"
 
 - assertVisible:
     text: "email"

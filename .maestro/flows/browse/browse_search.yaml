@@ -1,5 +1,5 @@
-appId: com.sagawrr.rnme
-name: "Browse - Movie List & Search"
+appId: com.anonymous.rnme
+name: "Home - Movie List & Search"
 
 ---
 
@@ -7,8 +7,8 @@ name: "Browse - Movie List & Search"
 
 # ── Default state ─────────────────────────────────────────────────────────────
 - assertVisible:
-    text: "Browse"
-    label: "Browse tab is active"
+    text: "Home"
+    label: "Home tab is active"
 
 - waitForAnimationToEnd
 
