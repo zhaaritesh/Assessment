@@ -40,3 +40,9 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+# Claude Code local settings
+.claude/
+
+# Maestro screenshot artefacts (saved to CWD on each run)
+theme-*.png

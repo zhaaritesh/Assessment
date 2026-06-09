@@ -216,7 +216,7 @@ Both verified against the live accessibility tree on Pixel 6 (1080×2400). Inten
 | Password field has no stable ID | Targeted via `"••••••••"` placeholder text — breaks if placeholder string changes | Add `testID="password-input"` to the `TextInput` in `LoginScreen.tsx` |
 | Live TMDb data | Movie titles and metadata change daily; all movie assertions are structural (RELEASED, RATING, RUNTIME) not value-based | Pin specific movie IDs in a staging API key if needed |
 | Supabase network dependency | Login-error cases 6–7 make real API calls; flaky on slow or offline networks | Add `extendedWaitUntil` with a longer timeout, or stub in CI with a Supabase local instance |
-| Theme change not auto-diffed | Screenshots are captured after each theme tap but not pixel-compared | Integrate Percy or Applitools for visual regression on top of the captured screenshots |
+| Theme change not auto-diffed | Screenshots captured after each theme tap (`screenshots/theme-*.png`) but not pixel-compared | Integrate Percy or Applitools for visual regression on top of the captured screenshots |
 | Image content unverifiable | Maestro cannot assert that poster or backdrop images actually loaded (only that the screen is rendered) | Add visual regression tooling |
 | Trailer WebView content | Video controls and playback are not assertable via Maestro | Espresso Web or Playwright for WebView-internal assertions |
 | Landscape orientation via Maestro | Maestro 2.6 has no native rotation command — orientation is set with `adb shell` before running `run_landscape.sh` | Will be resolved natively in a future Maestro release |
