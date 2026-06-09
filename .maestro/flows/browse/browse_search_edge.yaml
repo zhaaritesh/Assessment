@@ -1,0 +1,101 @@
+appId: com.anonymous.rnme
+name: "Browse - Search Edge Cases"
+
+# MIN_SEARCH_CHARS = 2 (from source). Tests input boundary behaviour,
+# case-insensitivity, and special-character resilience.
+
+---
+
+- runFlow: ../auth/_login_helper.yaml
+
+- extendedWaitUntil:
+    visible:
+      text: "Popular right now"
+    timeout: 20000
+
+# ── 1. Single character — below MIN_SEARCH_CHARS ─────────────────────────────
+- tapOn:
+    text: "Search movies by title"
+
+- inputText: "a"
+
+- extendedWaitUntil:
+    visible:
+      text: "One more character, then we search."
+    timeout: 10000
+
+- assertVisible:
+    text: "One more character, then we search."
+    label: "Partial-input hint shown for 1-char query (MIN_SEARCH_CHARS=2)"
+
+- assertNotVisible:
+    text: "Popular right now"
+    label: "Default list hidden while partial input hint is active"
+
+# ── 2. Exactly MIN_SEARCH_CHARS — search fires ────────────────────────────────
+- inputText: "n"
+
+- waitForAnimationToEnd
+
+- assertNotVisible:
+    text: "One more character"
+    label: "Hint disappears once minimum char threshold is met"
+
+# Clear "an" before next test
+- eraseText: 5
+
+- waitForAnimationToEnd
+
+# ── 3. Case-insensitive search ────────────────────────────────────────────────
+- tapOn:
+    text: "Search movies by title"
+
+- inputText: "INCEPTION"
+
+- extendedWaitUntil:
+    visible:
+      text: "Inception"
+    timeout: 10000
+
+- assertVisible:
+    text: "Inception"
+    label: "Search is case-insensitive: INCEPTION finds Inception"
+
+# Clear before next test
+- eraseText: 15
+
+- waitForAnimationToEnd
+
+# ── 4. Special characters — app must not crash ────────────────────────────────
+- tapOn:
+    text: "Search movies by title"
+
+- inputText: "!@#$"
+
+- waitForAnimationToEnd
+
+- assertVisible:
+    text: "Browse"
+    label: "App remains stable after special-character input"
+
+# Clear before next test
+- eraseText: 10
+
+- waitForAnimationToEnd
+
+# ── 5. Whitespace-only query ──────────────────────────────────────────────────
+- tapOn:
+    text: "Search movies by title"
+
+- inputText: "   "
+
+- waitForAnimationToEnd
+
+- assertNotVisible:
+    text: "couldn't"
+    label: "Whitespace-only query does not produce an error state"
+
+# ── Reset ─────────────────────────────────────────────────────────────────────
+- eraseText: 10
+
+- waitForAnimationToEnd

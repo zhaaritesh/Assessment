@@ -1,5 +1,5 @@
 appId: com.anonymous.rnme
-name: "Favorites - Add & Remove"
+name: "Favorites - Add, Verify Detail & Remove"
 
 ---
 
@@ -7,59 +7,68 @@ name: "Favorites - Add & Remove"
 
 - waitForAnimationToEnd
 
-# ── Add a movie to favorites ──────────────────────────────────────────────────
-# Tap the first movie in browse
+# ── Add a movie from Browse ───────────────────────────────────────────────────
 - tapOn:
-    index: 0
-    optional: true
+    point: "50%, 32%"
 
 - waitForAnimationToEnd
 
-# Save the title to reference later (screenshot baseline)
 - tapOn:
-    text: "Favorite"
-    optional: true
-- tapOn:
-    id: "favorite-button"
-    optional: true
+    text: "Save"
 
 - waitForAnimationToEnd
 
-# Go back to browse
+- assertVisible:
+    text: "Saved"
+    label: "Movie marked as saved"
+
 - back
 
-# ── Navigate to Favorites tab ─────────────────────────────────────────────────
+- waitForAnimationToEnd
+
+# ── Favorites tab shows the saved movie ──────────────────────────────────────
 - tapOn:
     text: "Favorites"
 
 - waitForAnimationToEnd
 
 - assertNotVisible:
-    text: "No favorites"
-    label: "Favorited movie appears in Favorites tab"
+    text: "No saved films yet"
+    label: "Saved movie appears in Favorites tab"
 
-# ── Remove from favorites (from favorites tab) ────────────────────────────────
+# ── Verify full detail from Favorites ────────────────────────────────────────
 - tapOn:
-    index: 0
-    optional: true
+    point: "50%, 20%"
 
 - waitForAnimationToEnd
 
+- assertVisible:
+    text: "RELEASED"
+    label: "Release date section visible in movie detail"
+
+- assertVisible:
+    text: "RATING"
+    label: "Rating section visible in movie detail"
+
+- assertVisible:
+    text: "Saved"
+    label: "Movie shows as already-saved when opened from Favorites"
+
+# ── Remove from favorites (also serves as cleanup) ────────────────────────────
 - tapOn:
-    text: "Favorite"
-    optional: true
-- tapOn:
-    id: "favorite-button"
-    optional: true
+    text: "Saved"
 
 - waitForAnimationToEnd
+
+- assertVisible:
+    text: "Save"
+    label: "Button reverts to Save after removing"
 
 - back
 
 - waitForAnimationToEnd
 
-# Expect empty state after removing the only favorite
+# ── Empty state shown after removal ──────────────────────────────────────────
 - assertVisible:
-    text: "No favorites"
-    optional: true
+    text: "No saved films yet"
     label: "Empty state shown when all favorites removed"

@@ -1,6 +1,10 @@
 appId: com.anonymous.rnme
 name: "_helper - Login"
 
+env:
+  TEST_EMAIL: test@rnme.com
+  TEST_PASSWORD: Test123$$
+
 ---
 
 - launchApp:
@@ -8,11 +12,13 @@ name: "_helper - Login"
 
 - tapOn:
     text: "Email"
-- inputText: "test@rnme.com"
+- inputText: ${TEST_EMAIL}
 
 - tapOn:
-    text: "Password"
-- inputText: "Test123$$"
+    text: "••••••••"
+- inputText: ${TEST_PASSWORD}
+
+- hideKeyboard
 
 - tapOn:
     text: "Log in"

@@ -1,28 +1,42 @@
 appId: com.anonymous.rnme
 name: "Auth - Login"
 
+env:
+  TEST_EMAIL: test@rnme.com
+  TEST_PASSWORD: Test123$$
+
 ---
 
 - launchApp:
     clearState: true
 
+# ── Login screen visible ──────────────────────────────────────────────────────
 - assertVisible:
     text: "Sign in"
     label: "Login screen loads on cold start"
 
+# ── Enter credentials ─────────────────────────────────────────────────────────
 - tapOn:
     text: "Email"
-- inputText: "test@rnme.com"
+- inputText: ${TEST_EMAIL}
 
 - tapOn:
-    text: "Password"
-- inputText: "Test123$$"
+    text: "••••••••"
+- inputText: ${TEST_PASSWORD}
 
+- hideKeyboard
+
+# ── Submit ────────────────────────────────────────────────────────────────────
 - tapOn:
     text: "Log in"
 
 - waitForAnimationToEnd
 
+- extendedWaitUntil:
+    visible:
+      text: "Browse"
+    timeout: 15000
+
 - assertVisible:
-    text: "Home"
-    label: "Lands on Home tab after successful login"
+    text: "Browse"
+    label: "Lands on Browse tab after successful login"

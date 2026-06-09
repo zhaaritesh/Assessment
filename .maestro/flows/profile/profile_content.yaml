@@ -1,0 +1,46 @@
+appId: com.anonymous.rnme
+name: "Profile - Content Verification"
+
+env:
+  TEST_EMAIL: test@rnme.com
+
+---
+
+- runFlow: ../auth/_login_helper.yaml
+
+- tapOn:
+    text: "Profile"
+
+- waitForAnimationToEnd
+
+# ── Structural sections present ───────────────────────────────────────────────
+- assertVisible:
+    text: "APPEARANCE"
+    label: "Appearance section header visible"
+
+- assertVisible:
+    text: "SIGNED IN AS"
+    label: "Signed-in-as section header visible"
+
+# ── Theme options all rendered ────────────────────────────────────────────────
+- assertVisible:
+    text: "Light"
+    label: "Light theme option visible"
+
+- assertVisible:
+    text: "Dark"
+    label: "Dark theme option visible"
+
+- assertVisible:
+    text: "System"
+    label: "System theme option visible"
+
+# ── Correct account identity shown ───────────────────────────────────────────
+- assertVisible:
+    text: ${TEST_EMAIL}
+    label: "Logged-in email address displayed correctly"
+
+# ── Sign-out action present ───────────────────────────────────────────────────
+- assertVisible:
+    text: "Sign out"
+    label: "Sign out button visible"

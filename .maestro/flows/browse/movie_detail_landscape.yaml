@@ -1,0 +1,85 @@
+appId: com.anonymous.rnme
+name: "Movie Detail - Landscape Orientation"
+
+# Designed to run via .maestro/run_landscape.sh which:
+#   1. Logs in via portrait login
+#   2. Rotates device to landscape
+#   3. Runs this flow (clearState: false — resumes logged-in session)
+# Do not run this flow in isolation.
+
+---
+
+# Resume the already-logged-in session in landscape orientation
+- launchApp:
+    clearState: false
+
+- waitForAnimationToEnd
+
+- assertVisible:
+    text: "Browse"
+    label: "App still logged in after landscape rotation"
+
+# ── Open first movie in landscape ─────────────────────────────────────────────
+- tapOn:
+    point: "50%, 32%"
+
+- waitForAnimationToEnd
+
+- assertVisible:
+    text: "RELEASED"
+    label: "Movie detail loads correctly in landscape"
+
+- assertVisible:
+    text: "RATING"
+    label: "Rating section visible in landscape"
+
+- assertVisible:
+    text: "RUNTIME"
+    label: "Runtime section visible in landscape"
+
+- assertVisible:
+    text: "Trailer"
+    label: "Trailer button present in landscape"
+
+- assertVisible:
+    text: "Save"
+    label: "Save button present in landscape"
+
+# ── Trailer opens and back works in landscape ─────────────────────────────────
+- tapOn:
+    text: "Trailer"
+
+- waitForAnimationToEnd
+
+- assertNotVisible:
+    text: "RELEASED"
+    label: "Trailer player replaces detail in landscape"
+
+- back
+
+- waitForAnimationToEnd
+
+- assertVisible:
+    text: "RELEASED"
+    label: "Back from trailer returns to detail in landscape"
+
+# ── Save toggle works in landscape ────────────────────────────────────────────
+- tapOn:
+    text: "Save"
+
+- waitForAnimationToEnd
+
+- assertVisible:
+    text: "Saved"
+    label: "Save toggles in landscape"
+
+- tapOn:
+    text: "Saved"
+
+- waitForAnimationToEnd
+
+- assertVisible:
+    text: "Save"
+    label: "Save restored in landscape"
+
+- back

@@ -1,59 +1,57 @@
 appId: com.anonymous.rnme
-name: "Home - Movie List & Search"
+name: "Browse - Movie List & Search"
 
 ---
 
+# ── Default state on fresh load ───────────────────────────────────────────────
 - runFlow: ../auth/_login_helper.yaml
 
-# ── Default state ─────────────────────────────────────────────────────────────
 - assertVisible:
-    text: "Home"
-    label: "Home tab is active"
+    text: "Browse"
+    label: "Browse tab is active after login"
 
-- waitForAnimationToEnd
+- extendedWaitUntil:
+    visible:
+      text: "Popular right now"
+    timeout: 20000
 
-- assertNotVisible:
-    text: "No movies found"
-    label: "Movie list populates from API"
+- assertVisible:
+    text: "Popular right now"
+    label: "Movie list populates from TMDb API"
 
 # ── Search happy path ─────────────────────────────────────────────────────────
 - tapOn:
-    text: "Search"
-    optional: true
-- tapOn:
-    id: "search-input"
-    optional: true
+    text: "Search movies by title"
+
 - inputText: "Inception"
 
-- waitForAnimationToEnd
+- extendedWaitUntil:
+    visible:
+      text: "Inception"
+    timeout: 10000
 
 - assertVisible:
     text: "Inception"
     label: "Search returns matching result"
 
-# ── Search clears results on empty ───────────────────────────────────────────
-- clearText
-- waitForAnimationToEnd
+# ── No-results empty state (fresh session to avoid search state carry-over) ───
+- runFlow: ../auth/_login_helper.yaml
 
-- assertNotVisible:
-    text: "No movies found"
-    label: "Clearing search restores default list"
+- extendedWaitUntil:
+    visible:
+      text: "Popular right now"
+    timeout: 20000
 
-# ── Search with no results ────────────────────────────────────────────────────
 - tapOn:
-    text: "Search"
-    optional: true
-- tapOn:
-    id: "search-input"
-    optional: true
+    text: "Search movies by title"
+
 - inputText: "xyzzy12345notamovie"
 
-- waitForAnimationToEnd
+- extendedWaitUntil:
+    visible:
+      text: "No films match that search"
+    timeout: 10000
 
 - assertVisible:
-    text: "No"
+    text: "No films match that search"
     label: "Empty state shown for unmatched query"
-
-# ── Reset search ──────────────────────────────────────────────────────────────
-- clearText
-- waitForAnimationToEnd

@@ -1,0 +1,85 @@
+appId: com.anonymous.rnme
+name: "Movie Detail - Trailer & Orientation"
+
+# Tests the Trailer button in the currently active orientation.
+# Run in portrait (default) for normal coverage; for landscape run:
+#   adb shell settings put system user_rotation 1
+#   maestro test .maestro/flows/browse/movie_detail_orientation.yaml
+#   adb shell settings put system user_rotation 0
+
+---
+
+- runFlow: ../auth/_login_helper.yaml
+
+- waitForAnimationToEnd
+
+# ── Open the first movie ──────────────────────────────────────────────────────
+- tapOn:
+    point: "50%, 32%"
+
+- waitForAnimationToEnd
+
+# ── Verify full metadata sections are present ─────────────────────────────────
+- assertVisible:
+    text: "RELEASED"
+    label: "Release date section visible"
+
+- assertVisible:
+    text: "RATING"
+    label: "Rating section visible"
+
+- assertVisible:
+    text: "RUNTIME"
+    label: "Runtime section visible"
+
+- assertVisible:
+    text: "Trailer"
+    label: "Trailer button present"
+
+- assertVisible:
+    text: "Save"
+    label: "Save button present"
+
+# ── Trailer: tap → WebView opens → back returns to detail ─────────────────────
+- tapOn:
+    text: "Trailer"
+
+- waitForAnimationToEnd
+
+# Movie detail metadata is replaced by the trailer player
+- assertNotVisible:
+    text: "RELEASED"
+    label: "Trailer player has replaced detail screen"
+
+- back
+
+- waitForAnimationToEnd
+
+- assertVisible:
+    text: "RELEASED"
+    label: "Back from trailer returns to movie detail"
+
+- assertVisible:
+    text: "Trailer"
+    label: "Trailer button still present after returning"
+
+# ── Save toggle still works after trailer interaction ─────────────────────────
+- tapOn:
+    text: "Save"
+
+- waitForAnimationToEnd
+
+- assertVisible:
+    text: "Saved"
+    label: "Save toggles to Saved correctly"
+
+- tapOn:
+    text: "Saved"
+
+- waitForAnimationToEnd
+
+- assertVisible:
+    text: "Save"
+    label: "Save button restored after unsaving"
+
+- back

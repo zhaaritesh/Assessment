@@ -164,6 +164,8 @@ export default function LoginScreen() {
                       secureTextEntry
                       textContentType="password"
                       autoComplete="password"
+                      testID="password-input"
+                      accessibilityLabel="password-input"
                       placeholder={COPY.login.passwordPlaceholder}
                       placeholderTextColor={colors.textMuted}
                       style={[styles.input, focusedField === 'password' && styles.inputFocused]}

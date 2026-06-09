@@ -22,29 +22,14 @@ Alternatives considered: **Appium** (more powerful but heavy setup, slower itera
 |---|---|
 | Java | 11+ |
 | Android SDK / ADB | any recent |
-| Maestro CLI | latest |
+| Maestro CLI | latest (`curl -Ls "https://get.maestro.mobile.dev" \| bash`) |
 | Android device or emulator | API 28+ recommended |
-
-### Install Maestro
-
-```bash
-curl -Ls "https://get.maestro.mobile.dev" | bash
-```
-
-Verify:
-
-```bash
-maestro --version
-```
 
 ### Install the APK
 
 ```bash
-# Clone the repo you forked
 git clone https://github.com/<your-fork>/rnme.git
 cd rnme
-
-# Connect your device / start an emulator, then:
 adb install rnme.apk
 ```
 
@@ -52,35 +37,65 @@ adb install rnme.apk
 
 ## Running Tests
 
-### Run all flows
-
 ```bash
-maestro test .maestro/
-```
+# Full suite (Maestro 2.6 does not recurse subdirectories automatically)
+maestro test \
+  .maestro/flows/auth/login.yaml \
+  .maestro/flows/auth/login_errors.yaml \
+  .maestro/flows/auth/guest_login.yaml \
+  .maestro/flows/auth/session_persist.yaml \
+  .maestro/flows/browse/tab_navigation.yaml \
+  .maestro/flows/browse/browse_search.yaml \
+  .maestro/flows/browse/browse_search_edge.yaml \
+  .maestro/flows/browse/movie_detail.yaml \
+  .maestro/flows/browse/movie_detail_orientation.yaml \
+  .maestro/flows/favorites/favorites.yaml \
+  .maestro/flows/favorites/favorites_persistence.yaml \
+  .maestro/flows/favorites/favorites_from_favorites.yaml \
+  .maestro/flows/favorites/favorites_saved_state.yaml \
+  .maestro/flows/profile/profile.yaml \
+  .maestro/flows/profile/profile_content.yaml
 
-### Run a single flow
-
-```bash
+# Single flow
 maestro test .maestro/flows/auth/login.yaml
-```
 
-### Run a specific folder
+# Landscape orientation test (Maestro 2.6 has no native rotation command — ADB wrapper provided)
+.maestro/run_landscape.sh                          # portrait default
+.maestro/run_landscape.sh emulator-5554            # specific device
 
-```bash
-maestro test .maestro/flows/favorites/
-```
-
-### Watch mode (re-runs on save)
-
-```bash
+# Watch mode (re-runs on save)
 maestro test --continuous .maestro/flows/browse/browse_search.yaml
+
+# JUnit XML report (for CI)
+maestro test --format junit --output results.xml \
+  .maestro/flows/auth/login.yaml [... all flows as above]
 ```
 
-### Generate a test report (HTML)
+---
+
+## Configuration
+
+Credentials and app ID are defined as `env:` defaults inside each flow that uses them. Override at runtime via CLI flags — no file edits needed:
 
 ```bash
-maestro test .maestro/ --format junit --output results.xml
+# Run with a different test account
+maestro test \
+  --env TEST_EMAIL=other@test.com \
+  --env TEST_PASSWORD=MyPass123 \
+  .maestro/
+
+# Run against a different app variant (e.g. debug build)
+maestro test \
+  --env APP_ID=com.example.rnme.debug \
+  .maestro/flows/auth/login.yaml
 ```
+
+Default values (used when no `--env` flag is provided):
+
+| Variable | Default |
+|---|---|
+| `TEST_EMAIL` | `test@rnme.com` |
+| `TEST_PASSWORD` | `Test123$$` |
 
 ---
 
@@ -90,60 +105,115 @@ maestro test .maestro/ --format junit --output results.xml
 .maestro/
 └── flows/
     ├── auth/
-    │   ├── _login_helper.yaml       # Shared login steps (imported by other flows)
-    │   ├── login.yaml               # Happy path login
-    │   ├── login_errors.yaml        # Empty fields, wrong password, bad email
-    │   └── session_persist.yaml     # Session survives app restart
+    │   ├── _login_helper.yaml            # Shared login steps — imported by all flows that need auth
+    │   ├── login.yaml                    # Happy path: credentials → Browse tab
+    │   ├── login_errors.yaml             # 8 error cases: empty, bad format, short pw, wrong creds, server errors
+    │   ├── guest_login.yaml              # Anonymous login, guest profile indicator, sign-out
+    │   └── session_persist.yaml          # Session survives cold restart (redux-persist)
     ├── browse/
-    │   ├── tab_navigation.yaml      # Tab bar smoke test
-    │   ├── browse_search.yaml       # Search happy path + empty state
-    │   └── movie_detail.yaml        # Detail screen + back navigation
+    │   ├── tab_navigation.yaml              # Tab bar smoke: Browse → Favorites → Profile → Browse
+    │   ├── browse_search.yaml               # Search: match, clear, no-results empty state
+    │   ├── browse_search_edge.yaml          # Edge cases: min-char hint, case-insensitive, special chars
+    │   ├── movie_detail.yaml                # Detail screen: RELEASED/RATING/RUNTIME, Save/Saved toggle
+    │   └── movie_detail_orientation.yaml    # Trailer button (portrait + landscape via ADB wrapper)
     ├── favorites/
-    │   ├── favorites.yaml           # Add → view → remove cycle
-    │   └── favorites_persistence.yaml  # Favorites survive restart (AsyncStorage)
+    │   ├── favorites.yaml                # Add → view in tab → remove → empty state
+    │   ├── favorites_persistence.yaml    # Favorites survive app restart (AsyncStorage)
+    │   ├── favorites_from_favorites.yaml # Open detail from Favorites tab — back returns to Favorites
+    │   └── favorites_saved_state.yaml    # Re-opening a saved movie shows Saved immediately (Redux state)
     └── profile/
-        └── profile.yaml            # Theme toggle + sign out
+        ├── profile.yaml                  # Theme toggle (Light/Dark/System), tab persistence, sign-out
+        └── profile_content.yaml          # Content: email shown correctly, all sections present
 ```
 
-**Naming convention:** flows prefixed with `_` are helpers, not standalone test cases.
+**Naming convention:** flows prefixed with `_` are shared helpers, not standalone test cases.
 
 ---
 
 ## Element Targeting Strategy
 
-Maestro is used in a layered fallback pattern to keep selectors resilient:
+The APK has no `testID`/`resource-id` props on most elements, so selectors are built in a priority order designed to survive minor UI changes:
 
-1. **`id:` first** — if `testID` props are set in the RN source, these are the most stable
-2. **`text:` fallback** — visible label text; survives layout changes, breaks only on copy changes
-3. **`index: 0`** — last resort for dynamic list items with no stable ID
+| Priority | Selector | When used | Fragility |
+|---|---|---|---|
+| 1 | `id:` | Only when `testID` is set in source | Most stable |
+| 2 | `text:` | Visible label or placeholder text | Breaks on copy changes only |
+| 3 | `label:` | Accessibility text (`accessibilityLabel`) | Stable if a11y is maintained |
+| 4 | `point:` | Dynamic list items with no stable text (movie rows) | Breaks on layout changes |
 
-This avoids brittle XPath or positional-only selectors that break on minor UI changes.
+**Key discovery documented:** The password `EditText` has no `resource-id` and `secureTextEntry` masks input. It's targeted via `tapOn: text: "••••••••"` — the literal placeholder value visible in Android's accessibility tree. Verified via `maestro hierarchy`.
+
+**Keyboard handling:** After typing the password, the soft keyboard covers the "Log in" button (the button exits the accessibility tree while the keyboard is active). A `- hideKeyboard` step is added before every "Log in" tap to dismiss the keyboard first. This pattern was confirmed via `maestro hierarchy` inspection.
+
+**Dynamic list items** (movie rows) are tapped by coordinate. Coordinates differ by screen because list headers push cards to different vertical positions:
+- Browse list (has "Popular right now" header): `point: "50%, 32%"`
+- Favorites list (shorter header): `point: "50%, 20%"`
+
+Both verified against the live accessibility tree on Pixel 6 (1080×2400). Intentionally tests *any* movie rather than a hardcoded title.
 
 ---
 
 ## Coverage Summary
 
-| Area | Scenarios Covered |
+| Area | What's Tested |
 |---|---|
-| Auth | Happy path login, empty submit, wrong password, malformed email, session persistence |
-| Browse | Default list loads, search match, search clear, no-results empty state |
-| Movie Detail | Screen opens, overview visible, favorite toggle, back navigation |
-| Favorites | Add, view, remove, persistence across restart |
-| Profile | Theme toggle, sign out → returns to login |
-| Navigation | Full tab bar smoke test |
+| **Auth — happy path** | Email + password login → lands on Browse |
+| **Auth — validation errors** | Empty form, email-only, password-only, invalid format, short password (< 6 chars) |
+| **Auth — server errors** | Wrong password, non-existent email → "Invalid login credentials" |
+| **Auth — guard** | Login screen stays on validation failure; no navigation to Browse |
+| **Auth — guest** | Anonymous login → Browse accessible; Profile shows "Guest" not email; sign-out works |
+| **Auth — session** | Session persists across cold restart; login screen not shown when already authenticated |
+| **Browse — list** | Movie list loads with "Popular right now"; tab active after login |
+| **Browse — search** | Match found, clear restores list, no-results empty state |
+| **Browse — search edge** | 1-char input triggers hint (MIN_SEARCH_CHARS=2); case-insensitive; special chars don't crash |
+| **Movie Detail — metadata** | RELEASED, RATING, RUNTIME sections visible; Trailer and Save buttons present |
+| **Movie Detail — Save/Saved toggle** | Save toggles to Saved and back; re-opening saved movie shows Saved immediately |
+| **Movie Detail — Trailer** | Trailer button opens player (RELEASED no longer visible); back returns to detail |
+| **Movie Detail — Landscape** | Same Trailer + Save interactions verified in landscape via `run_landscape.sh` |
+| **Movie Detail — Favorites entry** | Opened from Favorites tab shows "Saved" immediately; back → Favorites (not Browse) |
+| **Favorites — CRUD** | Add, view in tab, remove, empty state ("No saved films yet") |
+| **Favorites — persistence** | Saved movies survive app restart (AsyncStorage/redux-persist) |
+| **Favorites — session state** | Re-opening a saved movie shows "Saved" without re-save (Redux store consistent) |
+| **Profile — actions** | Theme toggle (Light/Dark/System), theme persists on tab switch, sign-out → Login |
+| **Profile — content** | Email displayed correctly, "SIGNED IN AS" section, all theme options rendered |
+| **Navigation** | Full tab bar smoke test across all three tabs |
 
-**Out of scope (intentional):** trailer player (WebView, excluded per task spec), backend mocking (testing against live data as instructed).
+**Out of scope (intentional):**
+- Trailer WebView *content* — video playback and controls are not asserted; only that the player opens and back navigation works
+- Backend mocking — testing against live Supabase/TMDb as instructed
+- Visual / pixel-level assertions — not supported by Maestro without additional tooling
 
 ---
 
-## What I'd Tackle Next (With More Time)
+## Known Issues / Limitations
 
-- **Element IDs in source** — add `testID` props to key interactive elements (`email-input`, `favorite-button`, `theme-toggle`) so selectors don't rely on text matching at all
-- **Scroll list coverage** — test pagination / infinite scroll on Browse; currently only first visible items are targeted
-- **Offline mode** — intercept network via `adb shell settings put global airplane_mode_on 1` and assert the app surfaces a meaningful error rather than crashing
-- **Cross-session favorites** — verify favorites aren't shared between user accounts (logout → login as different user)
-- **CI integration** — GitHub Actions workflow: spin up an emulator, install APK, run full suite, publish JUnit XML as artifact
-- **Visual regression baseline** — Maestro screenshots on each flow for pixel-diff tracking
+| Issue | Impact | Workaround / Path to Fix |
+|---|---|---|
+| No `testID`/`resource-id` on most elements | List-item taps use coordinates (`point: "50%, 32%"`) — fragile if layout reflows | Add `testID` props in source and rebuild APK |
+| Password field has no stable ID | Targeted via `"••••••••"` placeholder text — breaks if placeholder string changes | Add `testID="password-input"` to the `TextInput` in `LoginScreen.tsx` |
+| Live TMDb data | Movie titles and metadata change daily; all movie assertions are structural (RELEASED, RATING, RUNTIME) not value-based | Pin specific movie IDs in a staging API key if needed |
+| Supabase network dependency | Login-error cases 6–7 make real API calls; flaky on slow or offline networks | Add `extendedWaitUntil` with a longer timeout, or stub in CI with a Supabase local instance |
+| Theme change not auto-diffed | Screenshots are captured after each theme tap but not pixel-compared | Integrate Percy or Applitools for visual regression on top of the captured screenshots |
+| Image content unverifiable | Maestro cannot assert that poster or backdrop images actually loaded (only that the screen is rendered) | Add visual regression tooling |
+| Trailer WebView content | Video controls and playback are not assertable via Maestro | Espresso Web or Playwright for WebView-internal assertions |
+| Landscape orientation via Maestro | Maestro 2.6 has no native rotation command — orientation is set with `adb shell` before running `run_landscape.sh` | Will be resolved natively in a future Maestro release |
+
+---
+
+## What I'd Tackle Next
+
+- **Offline mode** — toggle airplane mode via `adb shell settings put global airplane_mode_on 1`, assert app surfaces a meaningful offline banner rather than crashing or showing empty state without explanation
+- **CI pipeline** — GitHub Actions: spin up emulator, install APK, run full suite, publish JUnit XML as artifact
+- **`testID` props in source** — add to password field, save button, theme toggle so selectors are ID-based instead of text/coordinate-based
+- **Cross-account isolation** — sign out, create a second guest session, verify first user's favorites are not visible
+- **Scroll / pagination** — scroll Browse list to bottom and assert next page loads
+- **Visual regression** — Maestro screenshot on each flow as a baseline; diff on subsequent runs to catch unintended UI changes
+
+---
+
+## AI Tooling Disclosure
+
+Cursor / Claude was used to accelerate: hierarchy inspection, flow scaffolding, and iterating on selector strategies. All test logic, priorities, and decisions were driven by manual exploration of the app and analysis of the Android accessibility tree via `maestro hierarchy`.
 
 ---
 

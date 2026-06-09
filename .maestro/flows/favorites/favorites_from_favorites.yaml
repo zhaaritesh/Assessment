@@ -1,0 +1,77 @@
+appId: com.anonymous.rnme
+name: "Favorites - Open Detail from Favorites Tab"
+
+# Validates navigation context: back from a detail opened via Favorites
+# returns to Favorites, not Browse. A different entry point than movie_detail.yaml.
+
+---
+
+- runFlow: ../auth/_login_helper.yaml
+
+- waitForAnimationToEnd
+
+# ── Save a movie from Browse first ────────────────────────────────────────────
+- tapOn:
+    point: "50%, 32%"
+
+- waitForAnimationToEnd
+
+- tapOn:
+    text: "Save"
+
+- waitForAnimationToEnd
+
+- back
+
+- waitForAnimationToEnd
+
+# ── Enter Favorites tab ───────────────────────────────────────────────────────
+- tapOn:
+    text: "Favorites"
+
+- waitForAnimationToEnd
+
+- assertNotVisible:
+    text: "No saved films yet"
+    label: "Saved movie appears in Favorites list"
+
+# ── Open detail from Favorites (different navigation stack than Browse) ───────
+- tapOn:
+    point: "50%, 20%"
+
+- waitForAnimationToEnd
+
+- assertVisible:
+    text: "RELEASED"
+    label: "Detail screen opens from Favorites tab"
+
+# Movie is already saved — button must show Saved, not Save
+- assertVisible:
+    text: "Saved"
+    label: "Already-saved state shown when opening from Favorites"
+
+# ── Back returns to Favorites, not Browse ─────────────────────────────────────
+- back
+
+- waitForAnimationToEnd
+
+- assertVisible:
+    text: "Favorites"
+    label: "Back from detail returns to Favorites screen, not Browse"
+
+- assertNotVisible:
+    text: "No saved films yet"
+    label: "Saved movie still present after returning"
+
+# ── Clean up: remove the saved movie ─────────────────────────────────────────
+- tapOn:
+    point: "50%, 20%"
+
+- waitForAnimationToEnd
+
+- tapOn:
+    text: "Saved"
+
+- waitForAnimationToEnd
+
+- back

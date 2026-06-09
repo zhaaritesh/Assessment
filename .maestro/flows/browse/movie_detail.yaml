@@ -1,5 +1,5 @@
 appId: com.anonymous.rnme
-name: "Home - Movie Detail"
+name: "Browse - Movie Detail"
 
 ---
 
@@ -7,54 +7,54 @@ name: "Home - Movie Detail"
 
 - waitForAnimationToEnd
 
-# Tap first visible movie row
+# Tap the first movie card (coordinate-based — avoids brittle index/regex selectors)
 - tapOn:
-    index: 0
-    text: ".*"
-    regex: true
-    optional: true
-
-# Fallback: scroll list and tap first item
-- scrollUntilVisible:
-    element:
-      index: 0
-    direction: DOWN
-    optional: true
-
-# Accept whatever the first tappable movie card is
-- tapOn:
-    index: 0
-    optional: true
+    point: "50%, 32%"
 
 - waitForAnimationToEnd
 
-# ── Detail screen assertions ──────────────────────────────────────────────────
+# ── Detail screen metadata assertions ────────────────────────────────────────
 - assertVisible:
-    text: "Overview"
-    label: "Detail screen shows Overview section"
+    text: "RELEASED"
+    label: "Detail screen shows release date section"
 
 - assertVisible:
-    text: "Rating"
-    optional: true
-    label: "Rating visible on detail screen"
+    text: "RATING"
+    label: "Detail screen shows rating section"
 
-# ── Favorite toggle ───────────────────────────────────────────────────────────
+- assertVisible:
+    text: "RUNTIME"
+    label: "Detail screen shows runtime section"
+
+- assertVisible:
+    text: "Trailer"
+    label: "Trailer button present"
+
+# ── Save toggle ───────────────────────────────────────────────────────────────
 - tapOn:
-    text: "Favorite"
-    optional: true
-- tapOn:
-    id: "favorite-button"
-    optional: true
+    text: "Save"
 
 - waitForAnimationToEnd
 
 - assertVisible:
-    text: "Favorite"
-    label: "Favorite button remains visible after toggle"
+    text: "Saved"
+    label: "Button changes to Saved after toggling on"
+
+# Toggle back off
+- tapOn:
+    text: "Saved"
+
+- waitForAnimationToEnd
+
+- assertVisible:
+    text: "Save"
+    label: "Button reverts to Save after toggling off"
 
 # ── Back navigation ───────────────────────────────────────────────────────────
 - back
 
+- waitForAnimationToEnd
+
 - assertVisible:
-    text: "Home"
-    label: "Back returns to Home screen"
+    text: "Browse"
+    label: "Back returns to Browse screen"

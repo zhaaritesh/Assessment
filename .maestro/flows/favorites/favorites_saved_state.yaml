@@ -1,0 +1,57 @@
+appId: com.anonymous.rnme
+name: "Favorites - In-Session Saved State Consistency"
+
+# Verifies Redux store reflects saved state within the same session.
+# Opening a previously saved movie must show "Saved" immediately — no re-fetch needed.
+
+---
+
+- runFlow: ../auth/_login_helper.yaml
+
+- waitForAnimationToEnd
+
+# ── Open and save a movie ─────────────────────────────────────────────────────
+- tapOn:
+    point: "50%, 32%"
+
+- waitForAnimationToEnd
+
+- assertVisible:
+    text: "Save"
+    label: "Movie not yet saved — Save button shown"
+
+- tapOn:
+    text: "Save"
+
+- waitForAnimationToEnd
+
+- assertVisible:
+    text: "Saved"
+    label: "Button updates to Saved immediately after tap"
+
+- back
+
+- waitForAnimationToEnd
+
+# ── Re-open the same movie without restarting ─────────────────────────────────
+- tapOn:
+    point: "50%, 32%"
+
+- waitForAnimationToEnd
+
+# Redux store must still reflect saved state — no spinner, no "Save" flash
+- assertVisible:
+    text: "Saved"
+    label: "Already-saved state shown on re-open within same session"
+
+- assertNotVisible:
+    text: "Save"
+    label: "Save button not shown when movie is already saved"
+
+# ── Clean up ──────────────────────────────────────────────────────────────────
+- tapOn:
+    text: "Saved"
+
+- waitForAnimationToEnd
+
+- back

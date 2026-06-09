@@ -7,10 +7,10 @@ name: "Navigation - Tab Bar Smoke Test"
 
 - waitForAnimationToEnd
 
-# Home tab (default)
+# Browse tab (default)
 - assertVisible:
-    text: "Home"
-    label: "Home tab visible after login"
+    text: "Browse"
+    label: "Browse tab visible after login"
 
 # Favorites tab
 - tapOn:
@@ -28,10 +28,10 @@ name: "Navigation - Tab Bar Smoke Test"
     text: "Profile"
     label: "Profile tab navigates correctly"
 
-# Back to Home
+# Back to Browse
 - tapOn:
-    text: "Home"
+    text: "Browse"
 - waitForAnimationToEnd
 - assertVisible:
-    text: "Home"
-    label: "Returns to Home from Profile"
+    text: "Browse"
+    label: "Returns to Browse from Profile"

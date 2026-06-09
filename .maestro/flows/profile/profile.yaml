@@ -15,29 +15,44 @@ name: "Profile - Theme Toggle & Sign Out"
     text: "Profile"
     label: "Profile screen loads"
 
-# ── Theme toggle ──────────────────────────────────────────────────────────────
-- tapOn:
-    text: "Dark"
-    optional: true
-- tapOn:
-    id: "theme-toggle"
-    optional: true
-
-- waitForAnimationToEnd
-
-# Toggle back
-- tapOn:
+# ── Verify all theme options are rendered ─────────────────────────────────────
+- assertVisible:
     text: "Light"
-    optional: true
+    label: "Light theme option present"
+
+- assertVisible:
+    text: "Dark"
+    label: "Dark theme option present"
+
+- assertVisible:
+    text: "System"
+    label: "System theme option present"
+
+# ── Theme toggle — screenshot after each change for visual audit ──────────────
 - tapOn:
-    id: "theme-toggle"
-    optional: true
+    label: "Dark"
 
 - waitForAnimationToEnd
+
+- takeScreenshot: theme-dark
+
+- tapOn:
+    label: "Light"
+
+- waitForAnimationToEnd
+
+- takeScreenshot: theme-light
+
+- tapOn:
+    label: "System"
+
+- waitForAnimationToEnd
+
+- takeScreenshot: theme-system
 
 # ── Theme persists across tabs ────────────────────────────────────────────────
 - tapOn:
-    text: "Home"
+    text: "Browse"
 
 - tapOn:
     text: "Profile"
@@ -50,20 +65,10 @@ name: "Profile - Theme Toggle & Sign Out"
 
 # ── Sign out ──────────────────────────────────────────────────────────────────
 - tapOn:
-    text: "Sign Out"
-    optional: true
-- tapOn:
     text: "Sign out"
-    optional: true
-- tapOn:
-    text: "Logout"
-    optional: true
-- tapOn:
-    id: "sign-out-button"
-    optional: true
 
 - waitForAnimationToEnd
 
 - assertVisible:
-    text: "Log in"
+    text: "Sign in"
     label: "Sign out returns to Login screen"

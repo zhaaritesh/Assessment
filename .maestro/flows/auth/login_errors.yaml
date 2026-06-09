@@ -1,66 +1,194 @@
 appId: com.anonymous.rnme
 name: "Auth - Login Error States"
 
+env:
+  TEST_EMAIL: test@rnme.com
+  TEST_PASSWORD: Test123$$
+
 ---
 
-# ── Empty fields ─────────────────────────────────────────────────────────────
+# ══════════════════════════════════════════════════════════════════════════════
+# 1. Empty form submit — both required errors fire
+# ══════════════════════════════════════════════════════════════════════════════
 - launchApp:
     clearState: true
 
 - tapOn:
     text: "Log in"
 
-- assertVisible:
-    text: "required"
-    label: "Validation fires on empty submit (email)"
-
-# ── Wrong password ────────────────────────────────────────────────────────────
-- tapOn:
-    text: "Email"
-    optional: true
-- tapOn:
-    id: "email-input"
-    optional: true
-- inputText: "test@rnme.com"
-
-- tapOn:
-    text: "Password"
-    optional: true
-- tapOn:
-    id: "password-input"
-    optional: true
-- inputText: "WrongPassword!"
-
-- tapOn:
-    text: "Log in"
+- waitForAnimationToEnd
 
 - assertVisible:
-    text: "Invalid"
-    label: "Error message shown for wrong credentials"
+    text: "Enter your email"
+    label: "Email required error on empty submit"
 
-# ── Malformed email ───────────────────────────────────────────────────────────
+- assertVisible:
+    text: "Enter your password"
+    label: "Password required error on empty submit"
+
+# ══════════════════════════════════════════════════════════════════════════════
+# 2. Invalid email format (password is valid)
+# ══════════════════════════════════════════════════════════════════════════════
 - launchApp:
     clearState: true
 
 - tapOn:
     text: "Email"
-    optional: true
-- tapOn:
-    id: "email-input"
-    optional: true
 - inputText: "notanemail"
 
 - tapOn:
-    text: "Password"
-    optional: true
-- tapOn:
-    id: "password-input"
-    optional: true
-- inputText: "Test123$$"
+    text: "••••••••"
+- inputText: ${TEST_PASSWORD}
+
+- hideKeyboard
 
 - tapOn:
     text: "Log in"
 
+- waitForAnimationToEnd
+
 - assertVisible:
-    text: "email"
+    text: "Enter a valid email address"
     label: "Email format validation error shown"
+
+# ══════════════════════════════════════════════════════════════════════════════
+# 3. Password too short (under 6 characters)
+# ══════════════════════════════════════════════════════════════════════════════
+- launchApp:
+    clearState: true
+
+- tapOn:
+    text: "Email"
+- inputText: ${TEST_EMAIL}
+
+- tapOn:
+    text: "••••••••"
+- inputText: "abc"
+
+- hideKeyboard
+
+- tapOn:
+    text: "Log in"
+
+- waitForAnimationToEnd
+
+- assertVisible:
+    text: "Use at least 6 characters"
+    label: "Password too short validation error shown"
+
+# ══════════════════════════════════════════════════════════════════════════════
+# 4. Email only empty, password filled
+# ══════════════════════════════════════════════════════════════════════════════
+- launchApp:
+    clearState: true
+
+- tapOn:
+    text: "••••••••"
+- inputText: ${TEST_PASSWORD}
+
+- hideKeyboard
+
+- tapOn:
+    text: "Log in"
+
+- waitForAnimationToEnd
+
+- assertVisible:
+    text: "Enter your email"
+    label: "Email required shown when only password is filled"
+
+# ══════════════════════════════════════════════════════════════════════════════
+# 5. Email filled, password empty
+# ══════════════════════════════════════════════════════════════════════════════
+- launchApp:
+    clearState: true
+
+- tapOn:
+    text: "Email"
+- inputText: ${TEST_EMAIL}
+
+- hideKeyboard
+
+- tapOn:
+    text: "Log in"
+
+- waitForAnimationToEnd
+
+- assertVisible:
+    text: "Enter your password"
+    label: "Password required shown when only email is filled"
+
+# ══════════════════════════════════════════════════════════════════════════════
+# 6. Wrong password for existing account (API error)
+# ══════════════════════════════════════════════════════════════════════════════
+- launchApp:
+    clearState: true
+
+- tapOn:
+    text: "Email"
+- inputText: ${TEST_EMAIL}
+
+- tapOn:
+    text: "••••••••"
+- inputText: "WrongPassword123!"
+
+- hideKeyboard
+
+- tapOn:
+    text: "Log in"
+
+- waitForAnimationToEnd
+
+- assertVisible:
+    text: "Invalid login credentials"
+    label: "Server error shown for wrong password"
+
+# ══════════════════════════════════════════════════════════════════════════════
+# 7. Non-existent email (API error)
+# ══════════════════════════════════════════════════════════════════════════════
+- launchApp:
+    clearState: true
+
+- tapOn:
+    text: "Email"
+- inputText: "nobody@fake-domain-xyz.com"
+
+- tapOn:
+    text: "••••••••"
+- inputText: ${TEST_PASSWORD}
+
+- hideKeyboard
+
+- tapOn:
+    text: "Log in"
+
+- waitForAnimationToEnd
+
+- assertVisible:
+    text: "Invalid login credentials"
+    label: "Server error shown for non-existent email"
+
+# ══════════════════════════════════════════════════════════════════════════════
+# 8. Login screen stays on validation failure — no navigation
+# ══════════════════════════════════════════════════════════════════════════════
+- launchApp:
+    clearState: true
+
+- tapOn:
+    text: "Email"
+- inputText: "bademail"
+
+- hideKeyboard
+
+- tapOn:
+    text: "Log in"
+
+- waitForAnimationToEnd
+
+- assertVisible:
+    text: "Sign in"
+    label: "User stays on login screen after validation failure"
+
+- assertNotVisible:
+    text: "Browse"
+    label: "Browse tab not shown when login fails"

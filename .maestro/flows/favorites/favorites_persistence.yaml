@@ -7,19 +7,14 @@ name: "Favorites - Persist Across App Restart"
 
 - waitForAnimationToEnd
 
-# Add a favorite
+# Save a movie
 - tapOn:
-    index: 0
-    optional: true
+    point: "50%, 32%"
 
 - waitForAnimationToEnd
 
 - tapOn:
-    text: "Favorite"
-    optional: true
-- tapOn:
-    id: "favorite-button"
-    optional: true
+    text: "Save"
 
 - waitForAnimationToEnd
 
@@ -33,7 +28,7 @@ name: "Favorites - Persist Across App Restart"
 
 # Should still be logged in (redux-persist)
 - assertVisible:
-    text: "Home"
+    text: "Browse"
     label: "Session persists after restart"
 
 - tapOn:
@@ -42,5 +37,5 @@ name: "Favorites - Persist Across App Restart"
 - waitForAnimationToEnd
 
 - assertNotVisible:
-    text: "No favorites"
+    text: "No saved films yet"
     label: "Favorites persist across app restart (AsyncStorage)"

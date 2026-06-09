@@ -1,0 +1,55 @@
+appId: com.anonymous.rnme
+name: "Auth - Guest / Anonymous Login"
+
+---
+
+- launchApp:
+    clearState: true
+
+- assertVisible:
+    text: "Sign in"
+    label: "Login screen shown on cold start"
+
+# ── Anonymous login path ──────────────────────────────────────────────────────
+- tapOn:
+    text: "Continue as guest"
+
+- waitForAnimationToEnd
+
+- extendedWaitUntil:
+    visible:
+      text: "Browse"
+    timeout: 15000
+
+- assertVisible:
+    text: "Browse"
+    label: "Guest user lands on Browse tab"
+
+# ── Guest can browse movies ───────────────────────────────────────────────────
+- assertVisible:
+    text: "Popular right now"
+    label: "Movie list loads for guest user"
+
+# ── Profile shows Guest indicator (not an email address) ─────────────────────
+- tapOn:
+    text: "Profile"
+
+- waitForAnimationToEnd
+
+- assertVisible:
+    text: "Guest"
+    label: "Profile shows Guest identity — not a real email"
+
+- assertNotVisible:
+    text: "@"
+    label: "No email address shown for anonymous user"
+
+# ── Guest can sign out ────────────────────────────────────────────────────────
+- tapOn:
+    text: "Sign out"
+
+- waitForAnimationToEnd
+
+- assertVisible:
+    text: "Sign in"
+    label: "Sign out from guest session returns to Login screen"
