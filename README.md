@@ -153,6 +153,23 @@ Both verified against the live accessibility tree on Pixel 6 (1080×2400). Inten
 
 ---
 
+## What I Focused On & Why
+
+**Auth first.** Everything downstream depends on login working. I covered the happy path, eight validation/error states, anonymous login, and session persistence — because `redux-persist` is explicitly in the stack and a broken persist config would silently break every other flow.
+
+**Favorites persistence second.** The task calls out `redux-persist` + AsyncStorage explicitly. If saved movies vanish on restart, that's a data-loss bug users notice immediately. I tested the full add → restart → verify cycle, plus in-session state consistency (re-opening a saved movie should show "Saved" without re-saving).
+
+**Search edge cases over UI polish.** I prioritised boundary behaviour (min-char threshold, case-insensitivity, special characters, empty state) over things like scroll position or image loading — logic bugs in search are harder to spot manually than layout issues.
+
+**Structural assertions, not value-based.** TMDb live data changes daily, so movie assertions target section headers (RELEASED, RATING, RUNTIME) rather than specific titles or numbers. This makes the suite resilient to data drift without mocking.
+
+**What I skipped intentionally:**
+- Trailer WebView *content* — explicitly out of scope; only asserting the player opens and back works
+- Backend mocking — task says test against live data
+- Exact movie title assertions — TMDb data is dynamic; structural presence is sufficient
+
+---
+
 ## Coverage Summary
 
 | Area | What's Tested |
